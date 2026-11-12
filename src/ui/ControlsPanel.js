@@ -130,6 +130,19 @@ export class ControlsPanel {
       }
     });
 
+    // Theory Navigation Tabs
+    const theoryTabs = document.querySelectorAll('.theory-tab-btn');
+    const theoryPanels = document.querySelectorAll('.theory-tab-panel');
+    theoryTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        theoryTabs.forEach(t => t.classList.remove('active'));
+        theoryPanels.forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        const targetId = tab.dataset.tab;
+        document.getElementById(targetId)?.classList.add('active');
+      });
+    });
+
     // Oscilloscope controls
     this.btnOscZoomIn?.addEventListener('click', () => {
       this.waveform.setTimeWindow(this.waveform.timeWindow * 0.7);

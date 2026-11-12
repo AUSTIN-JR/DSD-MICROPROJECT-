@@ -211,111 +211,384 @@
     <div id="theory-modal" class="modal-backdrop hidden">
       <div class="modal-card">
         <div class="modal-header">
-          <h2>Frequency Divider Using T Flip-Flops — Technical Reference</h2>
-          <button id="btn-close-theory" class="btn-close">&times;</button>
+          <div class="modal-header-title">
+            <span class="modal-icon">📖</span>
+            <div>
+              <h2>Theory & Circuit Schematics</h2>
+              <span class="modal-sub">DSD Microproject — Frequency Divider Using T Flip-Flops</span>
+            </div>
+          </div>
+          <button id="btn-close-theory" class="btn-close" title="Close">&times;</button>
         </div>
+
+        <!-- MODAL NAVIGATION TABS -->
+        <nav class="theory-nav-tabs">
+          <button class="theory-tab-btn active" data-tab="tab-schematic">⚡ Circuit Schematic</button>
+          <button class="theory-tab-btn" data-tab="tab-principle">📐 T Flip-Flop Principle</button>
+          <button class="theory-tab-btn" data-tab="tab-division">🔢 Frequency Division Math</button>
+          <button class="theory-tab-btn" data-tab="tab-pinout">🔌 IC Pinouts & 555</button>
+        </nav>
+
         <div class="modal-body">
-          <section class="theory-section">
-            <h3>1. Principle of Operation</h3>
-            <p>
-              A <strong>T (Toggle) Flip-Flop</strong> changes its output state on every active clock edge whenever its toggle input $T = 1$.
-              Since two state transitions (one LOW-to-HIGH and one HIGH-to-LOW) are required to complete a single output cycle, the output waveform frequency is exactly <strong>half</strong> of the clock frequency:
-            </p>
-            <div class="formula-box">
-              $$f_{\text{out}} = \frac{f_{\text{in}}}{2}$$
+          <!-- TAB 1: CIRCUIT SCHEMATIC -->
+          <div id="tab-schematic" class="theory-tab-panel active">
+            <div class="schematic-header">
+              <h3>Complete Hardware Logic Schematic (NE555 + Cascaded 74LS73 Dual JK in T-Mode)</h3>
+              <p>The diagram below illustrates the exact pin connections, power lines, and ripple cascade configured on the 3D breadboard.</p>
             </div>
-          </section>
 
-          <section class="theory-section">
-            <h3>2. Converting JK Flip-Flop (74LS73) to T Flip-Flop</h3>
-            <p>
-              The <strong>74LS73</strong> is a Dual Negative-Edge Triggered J-K Flip-Flop with individual Clear inputs.
-              By tying both $J$ and $K$ inputs permanently to logic <strong>HIGH (+5V VCC)</strong>, the flip-flop operates in its <strong>toggle mode</strong>:
-            </p>
-            <table class="truth-table">
-              <thead>
-                <tr>
-                  <th>CLK</th>
-                  <th>J</th>
-                  <th>K</th>
-                  <th>CLR#</th>
-                  <th>Qₙ₊₁ (Next State)</th>
-                  <th>Mode</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>↓ (Falling Edge)</td>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>1</td>
-                  <td><strong>Q̄ₙ (Toggles)</strong></td>
-                  <td><strong>T Flip-Flop Toggle Mode</strong></td>
-                </tr>
-                <tr>
-                  <td>↓</td>
-                  <td>0</td>
-                  <td>0</td>
-                  <td>1</td>
-                  <td>Qₙ</td>
-                  <td>No Change (Hold)</td>
-                </tr>
-                <tr>
-                  <td>↓</td>
-                  <td>0</td>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>0</td>
-                  <td>Reset</td>
-                </tr>
-                <tr>
-                  <td>↓</td>
-                  <td>1</td>
-                  <td>0</td>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>Set</td>
-                </tr>
-                <tr>
-                  <td>X</td>
-                  <td>X</td>
-                  <td>X</td>
-                  <td>0</td>
-                  <td>0</td>
-                  <td>Asynchronous Clear</td>
-                </tr>
-              </tbody>
-            </table>
-          </section>
+            <div class="schematic-container">
+              <svg viewBox="0 0 860 380" class="schematic-svg" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 1 L 8 5 L 0 9 z" fill="#00f0ff" />
+                  </marker>
+                  <marker id="arrow-y" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 1 L 8 5 L 0 9 z" fill="#ffd600" />
+                  </marker>
+                  <marker id="arrow-o" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 1 L 8 5 L 0 9 z" fill="#ff9100" />
+                  </marker>
+                  <marker id="arrow-g" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 1 L 8 5 L 0 9 z" fill="#00e676" />
+                  </marker>
+                  <linearGradient id="icGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#182030"/>
+                    <stop offset="100%" stop-color="#0f1624"/>
+                  </linearGradient>
+                </defs>
 
-          <section class="theory-section">
-            <h3>3. Cascaded Frequency Division (Asynchronous Ripple Counter)</h3>
-            <p>
-              By cascading the output of each flip-flop to the clock input of the subsequent stage:
-            </p>
-            <ul>
-              <li><strong>Stage 0 (NE555 Timer):</strong> Generates base clock frequency $f_{\text{in}}$.</li>
-              <li><strong>Stage 1 (FF0 - IC1 Unit A):</strong> Clocked by NE555 $\implies f_0 = \frac{f_{\text{in}}}{2}$.</li>
-              <li><strong>Stage 2 (FF1 - IC1 Unit B):</strong> Clocked by $Q_0 \implies f_1 = \frac{f_0}{2} = \frac{f_{\text{in}}}{4}$.</li>
-              <li><strong>Stage 3 (FF2 - IC2 Unit A):</strong> Clocked by $Q_1 \implies f_2 = \frac{f_1}{2} = \frac{f_{\text{in}}}{8}$.</li>
-            </ul>
-            <div class="formula-box">
-              $$f_n = \frac{f_{\text{in}}}{2^n} \quad \text{for stage } n$$
+                <!-- VCC & GND Power Bus Lines -->
+                <line x1="30" y1="30" x2="830" y2="30" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="6,4"/>
+                <text x="35" y="24" fill="#ef4444" font-family="monospace" font-size="11" font-weight="bold">+5V VCC POWER BUS</text>
+
+                <line x1="30" y1="355" x2="830" y2="355" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="6,4"/>
+                <text x="35" y="372" fill="#3b82f6" font-family="monospace" font-size="11" font-weight="bold">GROUND (0V) BUS</text>
+
+                <!-- ================= 1. NE555 BLOCK ================= -->
+                <g transform="translate(40, 70)">
+                  <rect width="160" height="230" rx="8" fill="url(#icGrad)" stroke="#00f0ff" stroke-width="1.5"/>
+                  <text x="80" y="25" fill="#00f0ff" font-family="monospace" font-size="13" font-weight="bold" text-anchor="middle">NE555 TIMER</text>
+                  <text x="80" y="42" fill="#94a3b8" font-family="sans-serif" font-size="10" text-anchor="middle">Astable Oscillator</text>
+
+                  <!-- Internal labels -->
+                  <text x="15" y="80" fill="#94a3b8" font-family="monospace" font-size="10">8: VCC</text>
+                  <text x="15" y="110" fill="#94a3b8" font-family="monospace" font-size="10">4: RESET</text>
+                  <text x="15" y="140" fill="#94a3b8" font-family="monospace" font-size="10">7: DISCH</text>
+                  <text x="15" y="170" fill="#94a3b8" font-family="monospace" font-size="10">6: THRESH</text>
+                  <text x="15" y="200" fill="#94a3b8" font-family="monospace" font-size="10">2: TRIG</text>
+                  <text x="145" y="130" fill="#00f0ff" font-family="monospace" font-size="11" font-weight="bold" text-anchor="end">OUT (3)</text>
+                  <text x="15" y="222" fill="#3b82f6" font-family="monospace" font-size="10">1: GND</text>
+
+                  <!-- VCC line to pin 8 & 4 -->
+                  <path d="M 50 65 L 50 -40" stroke="#ef4444" stroke-width="1.5" fill="none"/>
+                  <!-- GND line from pin 1 -->
+                  <path d="M 50 225 L 50 285" stroke="#3b82f6" stroke-width="1.5" fill="none"/>
+                </g>
+
+                <!-- Clock Signal Line to LED CLK & Stage 1 -->
+                <path d="M 200 195 L 240 195 L 240 120 L 290 120" stroke="#00f0ff" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+                <!-- Branch to CLK Indicator LED -->
+                <path d="M 240 195 L 240 270 L 260 270" stroke="#00f0ff" stroke-width="2" fill="none"/>
+                <circle cx="270" cy="270" r="7" fill="#00f0ff" filter="drop-shadow(0 0 5px #00f0ff)"/>
+                <text x="282" y="274" fill="#00f0ff" font-family="monospace" font-size="10" font-weight="bold">LED CLK (f)</text>
+
+                <!-- ================= 2. 74LS73 #1A (STAGE 1: Q0) ================= -->
+                <g transform="translate(290, 70)">
+                  <rect width="150" height="230" rx="8" fill="url(#icGrad)" stroke="#ffd600" stroke-width="1.5"/>
+                  <text x="75" y="25" fill="#ffd600" font-family="monospace" font-size="12" font-weight="bold" text-anchor="middle">74LS73 #1 (FF0)</text>
+                  <text x="75" y="42" fill="#94a3b8" font-family="sans-serif" font-size="10" text-anchor="middle">Stage 1 (T Mode)</text>
+
+                  <!-- Inversion bubble on CLK (Negative Edge) -->
+                  <circle cx="0" cy="50" r="4" fill="#0f1624" stroke="#00f0ff" stroke-width="1.5"/>
+                  <text x="12" y="54" fill="#00f0ff" font-family="monospace" font-size="10">1CLK (1)</text>
+
+                  <text x="15" y="85" fill="#ef4444" font-family="monospace" font-size="10">1J (14) = 1</text>
+                  <text x="15" y="115" fill="#ef4444" font-family="monospace" font-size="10">1K (3) = 1</text>
+                  <text x="15" y="145" fill="#ef4444" font-family="monospace" font-size="10">1CLR# (2) = 1</text>
+
+                  <text x="135" y="100" fill="#ffd600" font-family="monospace" font-size="11" font-weight="bold" text-anchor="end">1Q (12)</text>
+                  <text x="75" y="210" fill="#94a3b8" font-family="monospace" font-size="10" text-anchor="middle">Ratio: ÷2</text>
+
+                  <!-- VCC ties -->
+                  <path d="M 60 70 L 60 -40" stroke="#ef4444" stroke-width="1.5" fill="none"/>
+                </g>
+
+                <!-- Q0 Line to Stage 2 Clock and LED0 -->
+                <path d="M 440 165 L 475 165 L 475 120 L 510 120" stroke="#ffd600" stroke-width="2.5" fill="none" marker-end="url(#arrow-y)"/>
+                <!-- Branch to Q0 LED -->
+                <path d="M 475 165 L 475 270 L 490 270" stroke="#ffd600" stroke-width="2" fill="none"/>
+                <circle cx="500" cy="270" r="7" fill="#ff1744" filter="drop-shadow(0 0 5px #ff1744)"/>
+                <text x="512" y="274" fill="#ffd600" font-family="monospace" font-size="10" font-weight="bold">LED0 (f/2)</text>
+
+                <!-- ================= 3. 74LS73 #1B (STAGE 2: Q1) ================= -->
+                <g transform="translate(510, 70)">
+                  <rect width="150" height="230" rx="8" fill="url(#icGrad)" stroke="#ff9100" stroke-width="1.5"/>
+                  <text x="75" y="25" fill="#ff9100" font-family="monospace" font-size="12" font-weight="bold" text-anchor="middle">74LS73 #1 (FF1)</text>
+                  <text x="75" y="42" fill="#94a3b8" font-family="sans-serif" font-size="10" text-anchor="middle">Stage 2 (T Mode)</text>
+
+                  <circle cx="0" cy="50" r="4" fill="#0f1624" stroke="#ffd600" stroke-width="1.5"/>
+                  <text x="12" y="54" fill="#ffd600" font-family="monospace" font-size="10">2CLK (5)</text>
+
+                  <text x="15" y="85" fill="#ef4444" font-family="monospace" font-size="10">2J (7) = 1</text>
+                  <text x="15" y="115" fill="#ef4444" font-family="monospace" font-size="10">2K (10) = 1</text>
+                  <text x="15" y="145" fill="#ef4444" font-family="monospace" font-size="10">2CLR# (6) = 1</text>
+
+                  <text x="135" y="100" fill="#ff9100" font-family="monospace" font-size="11" font-weight="bold" text-anchor="end">2Q (9)</text>
+                  <text x="75" y="210" fill="#94a3b8" font-family="monospace" font-size="10" text-anchor="middle">Ratio: ÷4</text>
+
+                  <path d="M 60 70 L 60 -40" stroke="#ef4444" stroke-width="1.5" fill="none"/>
+                </g>
+
+                <!-- Q1 Line to Stage 3 Clock and LED1 -->
+                <path d="M 660 165 L 690 165 L 690 120 L 710 120" stroke="#ff9100" stroke-width="2.5" fill="none" marker-end="url(#arrow-o)"/>
+                <!-- Branch to Q1 LED -->
+                <path d="M 690 165 L 690 270 L 700 270" stroke="#ff9100" stroke-width="2" fill="none"/>
+                <circle cx="710" cy="270" r="7" fill="#ffd600" filter="drop-shadow(0 0 5px #ffd600)"/>
+                <text x="722" y="274" fill="#ff9100" font-family="monospace" font-size="10" font-weight="bold">LED1 (f/4)</text>
+
+                <!-- ================= 4. 74LS73 #2A (STAGE 3: Q2) ================= -->
+                <g transform="translate(710, 70)">
+                  <rect width="130" height="230" rx="8" fill="url(#icGrad)" stroke="#00e676" stroke-width="1.5"/>
+                  <text x="65" y="25" fill="#00e676" font-family="monospace" font-size="11" font-weight="bold" text-anchor="middle">74LS73 #2 (FF2)</text>
+                  <text x="65" y="42" fill="#94a3b8" font-family="sans-serif" font-size="9" text-anchor="middle">Stage 3 (T Mode)</text>
+
+                  <circle cx="0" cy="50" r="4" fill="#0f1624" stroke="#ff9100" stroke-width="1.5"/>
+                  <text x="10" y="54" fill="#ff9100" font-family="monospace" font-size="9">1CLK (1)</text>
+
+                  <text x="10" y="85" fill="#ef4444" font-family="monospace" font-size="9">1J=1, 1K=1</text>
+                  <text x="10" y="115" fill="#ef4444" font-family="monospace" font-size="9">CLR#=1</text>
+
+                  <text x="120" y="100" fill="#00e676" font-family="monospace" font-size="10" font-weight="bold" text-anchor="end">1Q (12)</text>
+                  <text x="65" y="210" fill="#94a3b8" font-family="monospace" font-size="9" text-anchor="middle">Ratio: ÷8</text>
+
+                  <path d="M 50 70 L 50 -40" stroke="#ef4444" stroke-width="1.5" fill="none"/>
+                </g>
+
+                <!-- Q2 Line to Final LED2 -->
+                <path d="M 840 165 L 850 165 L 850 310 L 780 310" stroke="#00e676" stroke-width="2.5" fill="none"/>
+                <circle cx="770" cy="310" r="7" fill="#00e676" filter="drop-shadow(0 0 5px #00e676)"/>
+                <text x="685" y="314" fill="#00e676" font-family="monospace" font-size="10" font-weight="bold">LED2 (f/8)</text>
+              </svg>
             </div>
-            <p>
-              Simultaneously, the states $(Q_2, Q_1, Q_0)$ function as a 3-bit binary asynchronous up-counter cycling from $000_2$ (0) to $111_2$ (7).
-            </p>
-          </section>
+          </div>
 
-          <section class="theory-section">
-            <h3>4. NE555 Astable Multivibrator Frequency Calculation</h3>
-            <div class="formula-box">
-              $$f = \frac{1.44}{(R_1 + 2 R_2) \cdot C_1}$$
-            </div>
-            <p>
-              In our circuit: $R_1 = 10\text{ k}\Omega$, $R_2 = 47\text{ k}\Omega$, $C_1 = 10\ \mu\text{F}$, yielding tunable laboratory frequencies from 0.2 Hz to 20 Hz.
-            </p>
-          </section>
+          <!-- TAB 2: T FLIP-FLOP WORKING PRINCIPLE -->
+          <div id="tab-principle" class="theory-tab-panel">
+            <section class="theory-section">
+              <h3>1. Working Principle of T (Toggle) Flip-Flops</h3>
+              <p>
+                A <strong>T Flip-Flop</strong> is a clocked bistable sequential logic device with a single toggle control input <em>T</em>.
+                When <em>T = 1</em>, the flip-flop toggles its output state on every active clock edge:
+              </p>
+
+              <div class="math-card">
+                <div class="math-formula">
+                  Q<sub>n+1</sub> = Q̄<sub>n</sub> &nbsp;(When T = 1 and Clock = ↓)
+                </div>
+                <div class="math-caption">Output state inverts on every falling clock transition.</div>
+              </div>
+
+              <p>
+                Because one full output cycle (rising edge + falling edge) requires <strong>two falling clock transitions</strong>,
+                the output frequency is halved: <strong>f<sub>out</sub> = f<sub>in</sub> / 2</strong>.
+              </p>
+            </section>
+
+            <section class="theory-section">
+              <h3>2. Configuring 74LS73 Dual JK Flip-Flop into T Mode</h3>
+              <p>
+                The <strong>SN74LS73AN</strong> contains two independent negative-edge triggered J-K flip-flops.
+                By connecting both <strong>J</strong> and <strong>K</strong> inputs permanently to <strong>+5V (Logic 1)</strong>,
+                the flip-flop is placed into continuous Toggle mode:
+              </p>
+
+              <div class="table-wrapper">
+                <table class="truth-table">
+                  <thead>
+                    <tr>
+                      <th>CLK Edge</th>
+                      <th>J Input</th>
+                      <th>K Input</th>
+                      <th>CLR#</th>
+                      <th>Output Q<sub>n+1</sub></th>
+                      <th>Operating Mode</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="highlight-row">
+                      <td><span class="edge-badge falling">↓ Falling</span></td>
+                      <td><span class="logic-pill high">1 (+5V)</span></td>
+                      <td><span class="logic-pill high">1 (+5V)</span></td>
+                      <td><span class="logic-pill high">1</span></td>
+                      <td><strong>Q̄<sub>n</sub> (Toggles)</strong></td>
+                      <td><span class="mode-badge toggle">T Flip-Flop Mode</span></td>
+                    </tr>
+                    <tr>
+                      <td><span class="edge-badge falling">↓ Falling</span></td>
+                      <td><span class="logic-pill low">0 (GND)</span></td>
+                      <td><span class="logic-pill low">0 (GND)</span></td>
+                      <td><span class="logic-pill high">1</span></td>
+                      <td>Q<sub>n</sub> (No Change)</td>
+                      <td><span class="mode-badge hold">Hold State</span></td>
+                    </tr>
+                    <tr>
+                      <td><span class="edge-badge falling">↓ Falling</span></td>
+                      <td><span class="logic-pill low">0 (GND)</span></td>
+                      <td><span class="logic-pill high">1 (+5V)</span></td>
+                      <td><span class="logic-pill high">1</span></td>
+                      <td>0 (Low)</td>
+                      <td><span class="mode-badge reset">Reset</span></td>
+                    </tr>
+                    <tr>
+                      <td><span class="edge-badge falling">↓ Falling</span></td>
+                      <td><span class="logic-pill high">1 (+5V)</span></td>
+                      <td><span class="logic-pill low">0 (GND)</span></td>
+                      <td><span class="logic-pill high">1</span></td>
+                      <td>1 (High)</td>
+                      <td><span class="mode-badge set">Set</span></td>
+                    </tr>
+                    <tr>
+                      <td><span class="edge-badge any">X (Any)</span></td>
+                      <td><span class="logic-pill any">X</span></td>
+                      <td><span class="logic-pill any">X</span></td>
+                      <td><span class="logic-pill low">0 (GND)</span></td>
+                      <td>0 (Direct Clear)</td>
+                      <td><span class="mode-badge clear">Asynchronous Reset</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+
+          <!-- TAB 3: FREQUENCY DIVISION MATH -->
+          <div id="tab-division" class="theory-tab-panel">
+            <section class="theory-section">
+              <h3>Cascaded Frequency Division Mathematics</h3>
+              <p>
+                In an asynchronous ripple counter configuration, each stage's output serves as the clock input for the next stage.
+                The frequency at stage <em>n</em> is mathematically governed by:
+              </p>
+
+              <div class="math-card large">
+                <div class="math-formula-fraction">
+                  <span class="var">f<sub>out</sub></span>
+                  <span class="equals">=</span>
+                  <div class="fraction-box">
+                    <span class="numerator">f<sub>in</sub></span>
+                    <span class="divider-line"></span>
+                    <span class="denominator">2<sup>n</sup></span>
+                  </div>
+                </div>
+                <div class="math-caption">Where n is the number of cascaded T flip-flop stages (n = 1, 2, 3...).</div>
+              </div>
+
+              <div class="stages-summary-grid">
+                <div class="stage-summary-box clk">
+                  <span class="tag">STAGE 0</span>
+                  <h4>Master Clock (NE555)</h4>
+                  <div class="math-eq">f<sub>0</sub> = f<sub>in</sub></div>
+                  <span class="ratio-badge">1 : 1</span>
+                </div>
+                <div class="stage-summary-box q0">
+                  <span class="tag">STAGE 1</span>
+                  <h4>Flip-Flop 0 (1Q)</h4>
+                  <div class="math-eq">f<sub>1</sub> = f<sub>in</sub> / 2</div>
+                  <span class="ratio-badge">2 : 1 (÷2)</span>
+                </div>
+                <div class="stage-summary-box q1">
+                  <span class="tag">STAGE 2</span>
+                  <h4>Flip-Flop 1 (2Q)</h4>
+                  <div class="math-eq">f<sub>2</sub> = f<sub>in</sub> / 4</div>
+                  <span class="ratio-badge">4 : 1 (÷4)</span>
+                </div>
+                <div class="stage-summary-box q2">
+                  <span class="tag">STAGE 3</span>
+                  <h4>Flip-Flop 2 (1Q)</h4>
+                  <div class="math-eq">f<sub>3</sub> = f<sub>in</sub> / 8</div>
+                  <span class="ratio-badge">8 : 1 (÷8)</span>
+                </div>
+              </div>
+
+              <h3>3-Bit Binary Ripple Counter Truth Table</h3>
+              <div class="table-wrapper">
+                <table class="truth-table">
+                  <thead>
+                    <tr>
+                      <th>Clock Cycle</th>
+                      <th>CLK Edge</th>
+                      <th>Q<sub>2</sub> (÷8)</th>
+                      <th>Q<sub>1</sub> (÷4)</th>
+                      <th>Q<sub>0</sub> (÷2)</th>
+                      <th>Binary [Q<sub>2</sub> Q<sub>1</sub> Q<sub>0</sub>]</th>
+                      <th>Decimal Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>Start / Reset</td><td>—</td><td>0</td><td>0</td><td>0</td><td><code>000</code></td><td>0</td></tr>
+                    <tr><td>Cycle 1</td><td>↓ 1 → 0</td><td>0</td><td>0</td><td>1</td><td><code>001</code></td><td>1</td></tr>
+                    <tr><td>Cycle 2</td><td>↓ 1 → 0</td><td>0</td><td>1</td><td>0</td><td><code>010</code></td><td>2</td></tr>
+                    <tr><td>Cycle 3</td><td>↓ 1 → 0</td><td>0</td><td>1</td><td>1</td><td><code>011</code></td><td>3</td></tr>
+                    <tr><td>Cycle 4</td><td>↓ 1 → 0</td><td>1</td><td>0</td><td>0</td><td><code>100</code></td><td>4</td></tr>
+                    <tr><td>Cycle 5</td><td>↓ 1 → 0</td><td>1</td><td>0</td><td>1</td><td><code>101</code></td><td>5</td></tr>
+                    <tr><td>Cycle 6</td><td>↓ 1 → 0</td><td>1</td><td>1</td><td>0</td><td><code>110</code></td><td>6</td></tr>
+                    <tr><td>Cycle 7</td><td>↓ 1 → 0</td><td>1</td><td>1</td><td>1</td><td><code>111</code></td><td>7</td></tr>
+                    <tr><td>Cycle 8</td><td>↓ 1 → 0</td><td>0</td><td>0</td><td>0</td><td><code>000</code></td><td>0 (Overflow)</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+
+          <!-- TAB 4: IC PINOUTS & 555 MATH -->
+          <div id="tab-pinout" class="theory-tab-panel">
+            <section class="theory-section">
+              <h3>NE555 Astable Multivibrator Frequency Formula</h3>
+              <div class="math-card">
+                <div class="math-formula-fraction">
+                  <span class="var">f</span>
+                  <span class="equals">=</span>
+                  <div class="fraction-box">
+                    <span class="numerator">1.44</span>
+                    <span class="divider-line"></span>
+                    <span class="denominator">(R<sub>1</sub> + 2R<sub>2</sub>) · C<sub>1</sub></span>
+                  </div>
+                </div>
+                <div class="math-caption">
+                  In this lab: R<sub>1</sub> = 10 kΩ, R<sub>2</sub> = 47 kΩ, C<sub>1</sub> = 10 µF, generating 0.2 Hz to 20 Hz tunable clock pulses.
+                </div>
+              </div>
+
+              <h3>SN74LS73AN DIP-14 Pinout Reference</h3>
+              <div class="pinout-grid">
+                <div class="pinout-col">
+                  <h4>Pins 1 – 7 (Bottom Row)</h4>
+                  <ul>
+                    <li><strong>Pin 1:</strong> 1CLK (Flip-Flop 1 Clock Input)</li>
+                    <li><strong>Pin 2:</strong> 1CLR# (Active-Low Clear 1) → Tied to +5V</li>
+                    <li><strong>Pin 3:</strong> 1K (Flip-Flop 1 K Input) → Tied to +5V</li>
+                    <li><strong>Pin 4:</strong> VCC (+5V Power Supply)</li>
+                    <li><strong>Pin 5:</strong> 2CLK (Flip-Flop 2 Clock Input)</li>
+                    <li><strong>Pin 6:</strong> 2CLR# (Active-Low Clear 2) → Tied to +5V</li>
+                    <li><strong>Pin 7:</strong> 2J (Flip-Flop 2 J Input) → Tied to +5V</li>
+                  </ul>
+                </div>
+                <div class="pinout-col">
+                  <h4>Pins 8 – 14 (Top Row)</h4>
+                  <ul>
+                    <li><strong>Pin 8:</strong> 2Q̄ (Flip-Flop 2 Inverted Output)</li>
+                    <li><strong>Pin 9:</strong> 2Q (Flip-Flop 2 True Output) → Q1 Output</li>
+                    <li><strong>Pin 10:</strong> 2K (Flip-Flop 2 K Input) → Tied to +5V</li>
+                    <li><strong>Pin 11:</strong> GND (Ground Return, 0V)</li>
+                    <li><strong>Pin 12:</strong> 1Q (Flip-Flop 1 True Output) → Q0 Output</li>
+                    <li><strong>Pin 13:</strong> 1Q̄ (Flip-Flop 1 Inverted Output)</li>
+                    <li><strong>Pin 14:</strong> 1J (Flip-Flop 1 J Input) → Tied to +5V</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+          </div>
         </div>
       </div>
     </div>
