@@ -1,0 +1,305 @@
+# Frequency Divider Using T Flip-Flops – Interactive 3D Simulation Website
+
+> **A Digital System Design (25CS205) Microproject**  
+> *Department of Computer Science and Engineering*  
+> **Karunya Institute of Technology and Sciences (Deemed to be University)**
+
+---
+
+## 📌 Disclaimer & Simulation Notice
+
+> [!IMPORTANT]
+> **Virtual Simulation Notice:**  
+> The electronic circuit presented in this project is **simulated virtually** using native JavaScript digital logic and rendered in real-time 3D using Three.js and WebGL. **It has not been physically assembled on hardware breadboards.** All component dimensions, IC pinouts, timing behaviors, logic state transitions, LED illumination levels, and signal propagation paths are authentic mathematical models mirroring genuine Texas Instruments / Fairchild physical components.
+
+---
+
+## 1. Project Overview
+
+The **Frequency Divider Using T Flip-Flops** project is a high-fidelity, interactive 3D laboratory simulation developed to demonstrate fundamental digital sequential logic principles. The application bridges theoretical concepts of digital electronics with hands-on computer-aided visualization.
+
+At its core, the project models an **asynchronous 3-stage ripple frequency divider** driven by an **NE555 timer IC** operating as an astable multivibrator. The frequency division stages are constructed using two **74LS73 dual negative-edge-triggered J-K flip-flop ICs**, where each flip-flop is configured to operate in **Toggle (T) mode** by tying its J and K inputs permanently to logic HIGH (+5V $V_{CC}$).
+
+Users can interact with a virtual laboratory breadboard in complete 3D space, adjust the master clock frequency in real-time, trigger single-step clock pulses, inspect live digital waveforms across all four channels on an integrated oscilloscope, and observe physical signal propagation through glowing particle animations along jumper wires.
+
+---
+
+## 2. Project Objectives
+
+1. **Demonstrate Sequential Logic in Real Time:** Visually illustrate how edge-triggered bistable multivibrators divide periodic clock signals.
+2. **Model Hardware-Accurate Components:** Procedurally generate a solderless 830-tie-point breadboard, DIP packages (NE555 and 74LS73), passives (EIA color-coded resistors, capacitors), 5V power module, and jumper wires according to standard electronic datasheets.
+3. **Simulate Genuine Digital State Transitions:** Implement a mathematically rigorous clock-edge simulation engine independent of rendering frame rates, ensuring exact timing relationships and zero missed edges.
+4. **Provide Multi-Channel Logic Analysis:** Offer a live, synchronous 4-channel digital oscilloscope / logic analyzer that plots $CLK$, $Q_0$, $Q_1$, and $Q_2$ waveforms with calibrated time divisions.
+5. **Facilitate Interactive Learning:** Deliver an intuitive dark-themed laboratory UI with preset camera angles, frequency tuning, manual single-stepping, and theoretical documentation for engineering students.
+
+---
+
+## 3. Working Principle of T Flip-Flops
+
+A **T (Toggle) Flip-Flop** is a single-input sequential circuit element that changes its output state ($Q$) on each active clock edge if and only if the toggle condition is active ($T = 1$). When $T = 0$, the flip-flop holds its previous state.
+
+### Conversion of J-K Flip-Flop (74LS73) to T Mode
+
+The **74LS73** IC contains two independent negative-edge-triggered J-K flip-flops with individual active-low Clear ($\overline{CLR}$) inputs. In standard J-K operation:
+
+$$\begin{array}{|c|c|c|c|c|}
+\hline
+\textbf{CLK} & \textbf{J} & \textbf{K} & \mathbf{Q_{n+1}} & \textbf{Operating Mode} \\
+\hline
+\downarrow & 0 & 0 & Q_n & \text{No Change (Hold)} \\
+\downarrow & 0 & 1 & 0 & \text{Reset} \\
+\downarrow & 1 & 0 & 1 & \text{Set} \\
+\downarrow & \mathbf{1} & \mathbf{1} & \mathbf{\overline{Q}_n} & \textbf{Toggle (T Mode)} \\
+\hline
+\end{array}$$
+
+By tying both the **J** and **K** inputs permanently to **Logic HIGH (+5V $V_{CC}$)**:
+$$J = 1, \quad K = 1 \implies Q_{n+1} = \overline{Q}_n$$
+
+On every falling clock edge ($\downarrow$ transition from HIGH to LOW), the flip-flop toggles its output state:
+- If $Q = 0$, the falling edge causes $Q \to 1$.
+- If $Q = 1$, the subsequent falling edge causes $Q \to 0$.
+
+Because **two falling clock edges** are required to produce one full cycle (one rising edge and one falling edge) of the output waveform, the output frequency is halved:
+$$f_{\text{out}} = \frac{f_{\text{in}}}{2}$$
+
+---
+
+## 4. Frequency Division Formula & Multi-Stage Cascading
+
+When multiple T flip-flops are cascaded such that the output of each stage ($Q_k$) serves as the clock input for the subsequent stage ($\text{CLK}_{k+1}$), an **asynchronous ripple frequency divider** (also functioning as a binary ripple up-counter) is established.
+
+### General Formula:
+
+$$f_{\text{out}} = \frac{f_{\text{in}}}{2^n}$$
+
+Where:
+- $f_{\text{in}}$ = Input master clock frequency generated by the NE555 timer.
+- $n$ = Number of cascaded flip-flop stages ($n = 1, 2, 3, \dots$).
+- $f_{\text{out}}$ = Output frequency at the $n$-th stage.
+- $T_{\text{out}} = 2^n \cdot T_{\text{in}}$ = Time period of the output waveform.
+
+---
+
+## 5. Three-Stage Frequency Division Example
+
+Given a baseline laboratory input clock frequency of **$f_{\text{in}} = 2.00\text{ Hz}$** ($T_{\text{in}} = 500\text{ ms}$):
+
+| Stage | Circuit Location | Clock Source | Division Ratio | Frequency ($f$) | Period ($T$) | Output Logic Monitor |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Input Clock** | NE555 Pin 3 (OUT) | Internal RC Oscillator | $1 : 1$ | **$2.00\text{ Hz}$** | $500.0\text{ ms}$ | Blue LED (CLK) |
+| **Stage 1 (FF0)** | 74LS73 #1 Pin 12 ($1Q$) | NE555 Pin 3 | $2 : 1$ ($\div 2$) | **$1.00\text{ Hz}$** | $1000.0\text{ ms}$ | Red LED ($Q_0$) |
+| **Stage 2 (FF1)** | 74LS73 #1 Pin 9 ($2Q$) | Stage 1 ($1Q$) | $4 : 1$ ($\div 4$) | **$0.50\text{ Hz}$** | $2000.0\text{ ms}$ | Yellow LED ($Q_1$) |
+| **Stage 3 (FF2)** | 74LS73 #2 Pin 12 ($1Q$) | Stage 2 ($2Q$) | $8 : 1$ ($\div 8$) | **$0.25\text{ Hz}$** | $4000.0\text{ ms}$ | Green LED ($Q_2$) |
+
+### Binary Ripple Counter Equivalence:
+
+As the flip-flops toggle on each respective falling edge, the 3-bit vector $[Q_2, Q_1, Q_0]$ cycles through an 8-state sequence:
+
+$$\begin{array}{|c|c|c|c|c|}
+\hline
+\textbf{Input Clock Cycle} & \mathbf{Q_2\ (\div 8)} & \mathbf{Q_1\ (\div 4)} & \mathbf{Q_0\ (\div 2)} & \textbf{Decimal Value} \\
+\hline
+\text{Initial / Reset} & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 1 & 1 \\
+2 & 0 & 1 & 0 & 2 \\
+3 & 0 & 1 & 1 & 3 \\
+4 & 1 & 0 & 0 & 4 \\
+5 & 1 & 0 & 1 & 5 \\
+6 & 1 & 1 & 0 & 6 \\
+7 & 1 & 1 & 1 & 7 \\
+8 & 0 & 0 & 0 & 0\ (\text{Roll-over}) \\
+\hline
+\end{array}$$
+
+---
+
+## 6. Features Actually Implemented
+
+The following features are **fully implemented** in the project's source code:
+
+- [x] **Decoupled Digital Logic Engine (`src/simulation/DigitalSimulator.js`):**
+  - High-precision micro-stepping loop with edge-event detection (`clkFalling`, `clkRising`, `q0Falling`, etc.).
+  - Configurable frequency spanning **$0.20\text{ Hz}$ to $20.0\text{ Hz}$**.
+  - Negative-edge-triggered cascade state logic.
+  - Manual single-pulse stepping capability.
+- [x] **Procedural 3D Solderless Breadboard (`src/components3d/BreadboardModel.js`):**
+  - Full 830-tie-point layout with terminal strips (Rows A–E and F–J), center DIP ravine, and top/bottom $\pm$ power rails with red and blue silkscreen striping.
+  - Mathematical hole coordinate mapper (`getHolePos(row, col)`).
+- [x] **Authentic Electronic Component Models (`src/components3d/ElectronicsComponents.js`):**
+  - **NE555P DIP-8 IC**: Dark epoxy body, orientation notch, pin 1 dot, silkscreen laser label, and bent metal lead frames.
+  - **Two SN74LS73AN DIP-14 ICs**: Dual JK flip-flop ICs placed across the center ravine.
+  - **4 Dynamic Diffusion LEDs**: Translucent dome lens, metallic collar, cathode lead, and real-time Three.js `PointLight` and halo sprites.
+  - **EIA Resistors**: Ceramic bodies with 4-band EIA color codes ($330\ \Omega$, $10\text{ k}\Omega$, $47\text{ k}\Omega$).
+  - **Capacitors**: Aluminum electrolytic timing capacitor with negative polarity stripe and ceramic disc capacitor.
+  - **5V DC Power Module**: Breadboard rail-mounted power supply unit with toggle switch and pilot LED.
+- [x] **Curved Jumper Wiring & Animated Signal Pulses (`src/components3d/WireManager.js`):**
+  - 34 curved 3D jumper wires modeled with Catmull-Rom splines and metal insertion pins.
+  - Color-coded insulation (Red = $V_{CC}$, Black = GND, Cyan = Clock, Yellow = Stage 1, Orange = Stage 2, Green = Stage 3).
+  - Glowing energy pulse particles flowing along active clock and cascade wires in real time.
+- [x] **4-Channel Digital Logic Analyzer Canvas (`src/ui/WaveformViewer.js`):**
+  - Real-time scrolling CRT oscilloscope displaying Channels 1 through 4.
+  - Voltage grid lines, time scale, current time readout, state badges, and time-scale zoom/freeze controls.
+- [x] **Interactive Laboratory Control Dock (`src/ui/ControlsPanel.js`):**
+  - Start, Stop, Reset, and Single-Step Pulse buttons.
+  - Frequency adjustment slider with numeric readout and quick preset pills ($0.5\text{ Hz}, 1\text{ Hz}, 2\text{ Hz}, 5\text{ Hz}, 10\text{ Hz}$).
+  - Real-time 3-bit binary counter $[Q_2 Q_1 Q_0]$ and decimal display.
+  - Five camera view preset buttons (Isometric, Top-Down, NE555 Macro, 74LS73 Macro, Output LEDs Macro).
+  - Theoretical reference modal with circuit diagrams and truth tables.
+
+---
+
+## 7. Technologies Used
+
+| Technology | Purpose |
+| :--- | :--- |
+| **HTML5** | Semantic DOM structure for laboratory panels, HUD, and oscilloscope canvas |
+| **CSS3** | Modern cyber-dark lab aesthetic, glassmorphism, responsive grid layout, and neon badges |
+| **JavaScript (ES6+)** | Pure simulation engine, asynchronous event loop, and UI controller bindings |
+| **Three.js (v0.187.0)** | WebGL 3D scene rendering, lighting, camera controls, materials, and particle animations |
+| **Three.js OrbitControls** | 360° rotation, pan, zoom, and smooth preset transitions |
+| **Vite (v8.3.8)** | Lightning-fast development server, module bundler, and production minification |
+
+---
+
+## 8. Project Architecture & Folder Structure
+
+```
+dsd microproject/
+├── index.html                   # Lab workbench UI shell and theoretical modal
+├── package.json                 # Project dependencies, scripts and metadata
+├── vite.config.js               # Vite build and development configuration
+├── README.md                    # Comprehensive technical documentation
+├── dist/                        # Production-ready minified build bundle
+│   ├── index.html
+│   └── assets/
+│       ├── index-B-N1IWKh.js    # Bundled application & Three.js logic
+│       └── index-D4Y4cpFo.css   # Compiled styles
+└── src/
+    ├── main.js                  # Application bootstrapper and lifecycle manager
+    ├── style.css                # Dark laboratory theme and responsive HUD
+    ├── simulation/
+    │   └── DigitalSimulator.js  # Pure digital logic simulation engine
+    ├── components3d/
+    │   ├── BreadboardScene.js   # Three.js scene, lighting & OrbitControls
+    │   ├── BreadboardModel.js   # Procedural 830-tie-point 3D breadboard
+    │   ├── ElectronicsComponents.js # DIP ICs, LEDs, resistors, capacitors & power module
+    │   └── WireManager.js       # 3D jumper wires & animated signal pulses
+    └── ui/
+        ├── ControlsPanel.js     # Laboratory buttons, sliders & counter HUD
+        └── WaveformViewer.js    # 4-channel real-time logic analyzer canvas
+```
+
+---
+
+## 9. 3D Simulation & Component Mapping
+
+The 3D scene places each physical component into precise coordinate tie-points on the breadboard:
+
+1. **Breadboard Layout:** Columns 1 through 45 are modeled with standard 0.1-inch (scaled 0.5 unit) pitch.
+2. **NE555 Timer IC (DIP-8):** Positioned at columns 6–9 across the center ravine.
+   - Pin 1 (GND) $\to$ Bottom GND rail.
+   - Pin 8 ($V_{CC}$) $\to$ Top $V_{CC}$ rail (+5V).
+   - Pin 4 (RESET) $\to$ Bottom $V_{CC}$ rail.
+   - Pin 2 (TRIG) & Pin 6 (THRES) $\to$ Timing node with $R_1$, $R_2$, and $C_1$.
+   - Pin 3 (OUT) $\to$ Clock jumper to 74LS73 #1 Pin 1 and Blue CLK LED.
+3. **74LS73 Dual JK Flip-Flop #1 (DIP-14):** Positioned at columns 16–22 across the center ravine.
+   - Houses **FF0** (Stage 1, $\div 2$) and **FF1** (Stage 2, $\div 4$).
+   - Inputs $1J, 1K, 2J, 2K, 1\overline{CLR}, 2\overline{CLR}$ tied to $+5\text{V}$ ($V_{CC}$).
+   - Pin 1 ($1\text{CLK}$) receives NE555 Clock. Pin 12 ($1Q$) outputs $f_{\text{in}}/2$.
+   - Pin 5 ($2\text{CLK}$) receives $1Q$ (Cascade 1). Pin 9 ($2Q$) outputs $f_{\text{in}}/4$.
+4. **74LS73 Dual JK Flip-Flop #2 (DIP-14):** Positioned at columns 26–32 across the center ravine.
+   - Houses **FF2** (Stage 3, $\div 8$).
+   - Pin 1 ($1\text{CLK}$) receives $2Q$ from IC #1 (Cascade 2). Pin 12 ($1Q$) outputs $f_{\text{in}}/8$.
+5. **Output Stage LEDs & Resistors:** Positioned at columns 11 (Blue CLK), 35 (Red $Q_0$), 38 (Yellow $Q_1$), and 41 (Green $Q_2$), each grounded through $330\ \Omega$ current-limiting resistors.
+
+---
+
+## 10. Installation & Setup Instructions
+
+### Prerequisites
+- **Node.js** (v18.0.0 or later, v24 recommended)
+- **npm** (v9.0.0 or later)
+
+### Steps to Run Locally
+
+1. **Clone or Navigate to the Repository:**
+   ```bash
+   git clone https://github.com/AUSTIN-JR/DSD-MICROPROJECT-.git
+   cd DSD-MICROPROJECT-
+   ```
+
+2. **Install Dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Start the Development Server:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Access the Website:**
+   Open your browser and navigate to:
+   ```
+   http://localhost:5173/
+   ```
+
+5. **Build for Production (Optional):**
+   ```bash
+   npm run build
+   npm run preview
+   ```
+
+---
+
+## 11. Applications of Frequency Dividers
+
+1. **Digital Clocks & Wristwatches:** Dividing a 32.768 kHz quartz crystal oscillator frequency down to exactly 1 Hz to tick seconds.
+2. **Microprocessor Clock Prescalers:** Deriving system peripheral bus clocks (SPI, I2C, UART) from high-speed CPU PLL clock sources.
+3. **Baud Rate Generators:** Generating standardized telecommunication transmission rates (9600, 115200 baud) in serial interfaces.
+4. **Frequency Synthesizers & Phase-Locked Loops (PLLs):** Channel selection and RF signal tuning in wireless communication equipment.
+5. **Binary Up/Down Counters:** Fundamental memory and sequencing element in digital arithmetic logic units (ALUs).
+
+---
+
+## 12. Screenshots Section
+
+> [!NOTE]
+> Static screenshot PNG files are not stored directly in the repository to keep git history lightweight. You can capture live screenshots directly while interacting with the simulation in the browser:
+
+- **Full Laboratory Bench View:** Isometric camera angle showing the complete breadboard, glowing LEDs, and 4-channel oscilloscope.
+- **NE555 Timer Astable Close-Up:** Detailed macro shot of the 8-pin DIP package, timing capacitors, and resistor color bands.
+- **Cascaded 74LS73 Flip-Flops:** Close-up of the two DIP-14 ICs with jumper wires routing $Q_0 \to \text{CLK}_1$ and $Q_1 \to \text{CLK}_2$.
+- **Real-Time Digital Waveform:** 4-channel logic analyzer displaying phase-locked square waves halving at each stage.
+
+---
+
+## 13. Team Members
+
+| Name | Register Number | Role / Contribution |
+| :--- | :---: | :--- |
+| **Austin J Robin** | **URK26CS6002** | 3D Modeling (Three.js), Circuit Architecture & WebGL Scene Design |
+| **Ashish Samuel B** | **URK26CS6018** | Digital Logic Simulation Engine & Timing Edge Cascade Modeling |
+| **Johan Steve J S** | **URK26CS6054** | UI/UX Development, Control Panel Dock & CSS Glassmorphism |
+| **Godwin J** | **URK26CS6057** | Digital Oscilloscope Logic Analyzer & Technical Documentation |
+
+---
+
+## 14. Academic Information
+
+- **Course:** Digital System Design
+- **Course Code:** 25CS205
+- **Faculty Supervisor:** Dr. R. Chitra
+- **Department:** Computer Science and Engineering
+- **Institution:** Karunya Institute of Technology and Sciences (Deemed to be University), Coimbatore, Tamil Nadu, India
+
+---
+
+## 15. References
+
+1. **M. Morris Mano & Michael D. Ciletti**, *Digital Design: With an Introduction to the Verilog HDL, VHDL, and SystemVerilog*, 6th Edition, Pearson.
+2. **Thomas L. Floyd**, *Digital Fundamentals*, 11th Edition, Pearson Education.
+3. **Texas Instruments**, *SN74LS73A Dual J-K Flip-Flops with Clear Datasheet*, Document No. SDLS118, Revised March 1988.
+4. **Texas Instruments**, *NE555 Precision Timers Datasheet*, Document No. SLOS094G, Revised January 2015.
+5. **Three.js Documentation**, *WebGL 3D Engine Reference Guide*, [https://threejs.org/docs/](https://threejs.org/docs/).

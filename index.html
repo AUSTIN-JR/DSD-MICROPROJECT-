@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Frequency Divider Using T Flip-Flops | DSD Microproject</title>
+  <link rel="stylesheet" href="./src/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app" class="laboratory-app">
+    <!-- TOP INSTRUMENT HEADER -->
+    <header class="lab-header">
+      <div class="header-left">
+        <div class="lab-icon">⚡</div>
+        <div class="lab-title-group">
+          <h1>FREQUENCY DIVIDER USING T FLIP-FLOPS</h1>
+          <p class="subtitle">NE555 Astable Clock Source + Cascaded 74LS73 Dual JK Flip-Flops (J=K=1)</p>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="status-indicator">
+          <span class="pulse-dot"></span>
+          <span id="sim-status-badge" class="status-badge running">RUNNING</span>
+        </div>
+        <button id="btn-theory" class="btn btn-secondary">
+          <span class="icon">📖</span> Theory & Schematics
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN INTERACTIVE WORKSPACE -->
+    <main class="lab-workspace">
+      <!-- LEFT / TOP: 3D BREADBOARD VIEWPORT -->
+      <section class="viewport-section">
+        <div id="canvas-container" class="canvas-container">
+          <!-- FLOATING CAMERA PRESET CONTROLS -->
+          <div class="floating-camera-bar">
+            <span class="bar-label">VIEW:</span>
+            <button class="cam-btn active" data-preset="ISOMETRIC">Isometric</button>
+            <button class="cam-btn" data-preset="TOP_DOWN">Top-Down</button>
+            <button class="cam-btn" data-preset="ZOOM_555">NE555 Timer</button>
+            <button class="cam-btn" data-preset="ZOOM_FLIPFLOPS">74LS73 Flip-Flops</button>
+            <button class="cam-btn" data-preset="ZOOM_LEDS">Output LEDs</button>
+          </div>
+
+          <!-- INTERACTIVE NAVIGATION HELP -->
+          <div class="viewport-help-overlay">
+            <span>Left-click: Rotate</span> • <span>Right-click: Pan</span> • <span>Scroll: Zoom</span>
+          </div>
+
+          <!-- LED STATE GLOW INDICATORS OVERLAY -->
+          <div class="led-telemetry-overlay">
+            <div class="telemetry-pill clk" id="stage0-pill">
+              <span class="dot"></span> CLK
+            </div>
+            <div class="telemetry-pill q0" id="stage1-pill">
+              <span class="dot"></span> Q0 (÷2)
+            </div>
+            <div class="telemetry-pill q1" id="stage2-pill">
+              <span class="dot"></span> Q1 (÷4)
+            </div>
+            <div class="telemetry-pill q2" id="stage3-pill">
+              <span class="dot"></span> Q2 (÷8)
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT / BOTTOM: FREQUENCY CARDS, CONTROLS, AND OSCILLOSCOPE -->
+      <aside class="instruments-section">
+        <!-- FREQUENCY STAGES CARDS (4 STAGES) -->
+        <div class="panel frequency-stages-panel">
+          <div class="panel-header">
+            <h3>FREQUENCY DIVISION STAGES</h3>
+            <span class="badge">f_out = f_in / 2ⁿ</span>
+          </div>
+
+          <div class="stages-grid">
+            <!-- Stage 0: Input Frequency -->
+            <div class="stage-card stage-clk">
+              <div class="stage-top">
+                <span class="stage-name">INPUT CLOCK</span>
+                <span class="stage-ratio">1:1</span>
+              </div>
+              <div class="stage-value" id="stage0-freq">2.00 Hz</div>
+              <div class="stage-meta">
+                <span>Period: <strong id="stage0-period">500.0 ms</strong></span>
+                <span id="stage0-state" class="logic-state-tag high">HIGH</span>
+              </div>
+              <div class="stage-source">NE555 Pin 3 (OUT)</div>
+            </div>
+
+            <!-- Stage 1: Div 2 -->
+            <div class="stage-card stage-q0">
+              <div class="stage-top">
+                <span class="stage-name">STAGE 1 (FF0)</span>
+                <span class="stage-ratio">÷2</span>
+              </div>
+              <div class="stage-value" id="stage1-freq">1.00 Hz</div>
+              <div class="stage-meta">
+                <span>Period: <strong id="stage1-period">1000.0 ms</strong></span>
+                <span id="stage1-state" class="logic-state-tag low">LOW</span>
+              </div>
+              <div class="stage-source">74LS73 #1 Pin 12 (1Q)</div>
+            </div>
+
+            <!-- Stage 2: Div 4 -->
+            <div class="stage-card stage-q1">
+              <div class="stage-top">
+                <span class="stage-name">STAGE 2 (FF1)</span>
+                <span class="stage-ratio">÷4</span>
+              </div>
+              <div class="stage-value" id="stage2-freq">0.50 Hz</div>
+              <div class="stage-meta">
+                <span>Period: <strong id="stage2-period">2000.0 ms</strong></span>
+                <span id="stage2-state" class="logic-state-tag low">LOW</span>
+              </div>
+              <div class="stage-source">74LS73 #1 Pin 9 (2Q)</div>
+            </div>
+
+            <!-- Stage 3: Div 8 -->
+            <div class="stage-card stage-q2">
+              <div class="stage-top">
+                <span class="stage-name">STAGE 3 (FF2)</span>
+                <span class="stage-ratio">÷8</span>
+              </div>
+              <div class="stage-value" id="stage3-freq">0.25 Hz</div>
+              <div class="stage-meta">
+                <span>Period: <strong id="stage3-period">4000.0 ms</strong></span>
+                <span id="stage3-state" class="logic-state-tag low">LOW</span>
+              </div>
+              <div class="stage-source">74LS73 #2 Pin 12 (1Q)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LAB CONTROLS & RIPPLE COUNTER DOCK -->
+        <div class="panel controls-panel">
+          <div class="controls-row">
+            <!-- PLAYBACK BUTTONS -->
+            <div class="btn-group">
+              <button id="btn-start-stop" class="btn btn-warning">
+                <span class="icon">⏸</span> STOP
+              </button>
+              <button id="btn-pulse" class="btn btn-primary" title="Trigger single clock pulse cycle">
+                <span class="icon">⏱</span> PULSE STEP
+              </button>
+              <button id="btn-reset" class="btn btn-secondary" title="Reset all flip-flops to 0">
+                <span class="icon">↺</span> RESET
+              </button>
+            </div>
+
+            <!-- 3-BIT RIPPLE COUNTER MONITOR -->
+            <div class="counter-display">
+              <span class="counter-label">3-BIT STATE [Q₂ Q₁ Q₀]:</span>
+              <div class="binary-box" id="counter-binary">
+                <span class="bit bit-0">0</span>
+                <span class="bit bit-0">0</span>
+                <span class="bit bit-0">0</span>
+              </div>
+              <span class="dec-tag">DEC: <strong id="counter-decimal">0</strong> / 7</span>
+            </div>
+          </div>
+
+          <!-- FREQUENCY ADJUSTMENT SLIDER -->
+          <div class="slider-control-block">
+            <div class="slider-header">
+              <label for="freq-slider">INPUT CLOCK FREQUENCY (NE555)</label>
+              <span id="freq-display-value" class="slider-val">2.00 Hz</span>
+            </div>
+            <div class="slider-wrapper">
+              <input type="range" id="freq-slider" min="0.2" max="20.0" step="0.1" value="2.0" />
+            </div>
+            <div class="preset-pills">
+              <span class="preset-label">PRESETS:</span>
+              <button class="freq-preset-btn" data-hz="0.5">0.5 Hz (Slow)</button>
+              <button class="freq-preset-btn" data-hz="1.0">1.0 Hz</button>
+              <button class="freq-preset-btn active" data-hz="2.0">2.0 Hz (Default)</button>
+              <button class="freq-preset-btn" data-hz="5.0">5.0 Hz</button>
+              <button class="freq-preset-btn" data-hz="10.0">10.0 Hz (Fast)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- LIVE DIGITAL LOGIC ANALYZER / OSCILLOSCOPE -->
+        <div class="panel oscilloscope-panel">
+          <div class="panel-header osc-header">
+            <div class="header-title-group">
+              <h3>LOGIC ANALYZER / DIGITAL WAVEFORM DISPLAY</h3>
+              <span class="osc-sub">Synchronous Multi-Channel Timing Inspection</span>
+            </div>
+            <div class="osc-controls">
+              <button id="btn-osc-zoomin" class="btn-micro" title="Zoom In Time Scale">+</button>
+              <button id="btn-osc-zoomout" class="btn-micro" title="Zoom Out Time Scale">-</button>
+              <button id="btn-osc-freeze" class="btn-micro" title="Freeze Display">FREEZE</button>
+            </div>
+          </div>
+
+          <div class="canvas-waveform-wrapper">
+            <canvas id="oscilloscope-canvas"></canvas>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- THEORY & SCHEMATICS MODAL -->
+    <div id="theory-modal" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2>Frequency Divider Using T Flip-Flops — Technical Reference</h2>
+          <button id="btn-close-theory" class="btn-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <section class="theory-section">
+            <h3>1. Principle of Operation</h3>
+            <p>
+              A <strong>T (Toggle) Flip-Flop</strong> changes its output state on every active clock edge whenever its toggle input $T = 1$.
+              Since two state transitions (one LOW-to-HIGH and one HIGH-to-LOW) are required to complete a single output cycle, the output waveform frequency is exactly <strong>half</strong> of the clock frequency:
+            </p>
+            <div class="formula-box">
+              $$f_{\text{out}} = \frac{f_{\text{in}}}{2}$$
+            </div>
+          </section>
+
+          <section class="theory-section">
+            <h3>2. Converting JK Flip-Flop (74LS73) to T Flip-Flop</h3>
+            <p>
+              The <strong>74LS73</strong> is a Dual Negative-Edge Triggered J-K Flip-Flop with individual Clear inputs.
+              By tying both $J$ and $K$ inputs permanently to logic <strong>HIGH (+5V VCC)</strong>, the flip-flop operates in its <strong>toggle mode</strong>:
+            </p>
+            <table class="truth-table">
+              <thead>
+                <tr>
+                  <th>CLK</th>
+                  <th>J</th>
+                  <th>K</th>
+                  <th>CLR#</th>
+                  <th>Qₙ₊₁ (Next State)</th>
+                  <th>Mode</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>↓ (Falling Edge)</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td><strong>Q̄ₙ (Toggles)</strong></td>
+                  <td><strong>T Flip-Flop Toggle Mode</strong></td>
+                </tr>
+                <tr>
+                  <td>↓</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>Qₙ</td>
+                  <td>No Change (Hold)</td>
+                </tr>
+                <tr>
+                  <td>↓</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>Reset</td>
+                </tr>
+                <tr>
+                  <td>↓</td>
+                  <td>1</td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td>Set</td>
+                </tr>
+                <tr>
+                  <td>X</td>
+                  <td>X</td>
+                  <td>X</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>Asynchronous Clear</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="theory-section">
+            <h3>3. Cascaded Frequency Division (Asynchronous Ripple Counter)</h3>
+            <p>
+              By cascading the output of each flip-flop to the clock input of the subsequent stage:
+            </p>
+            <ul>
+              <li><strong>Stage 0 (NE555 Timer):</strong> Generates base clock frequency $f_{\text{in}}$.</li>
+              <li><strong>Stage 1 (FF0 - IC1 Unit A):</strong> Clocked by NE555 $\implies f_0 = \frac{f_{\text{in}}}{2}$.</li>
+              <li><strong>Stage 2 (FF1 - IC1 Unit B):</strong> Clocked by $Q_0 \implies f_1 = \frac{f_0}{2} = \frac{f_{\text{in}}}{4}$.</li>
+              <li><strong>Stage 3 (FF2 - IC2 Unit A):</strong> Clocked by $Q_1 \implies f_2 = \frac{f_1}{2} = \frac{f_{\text{in}}}{8}$.</li>
+            </ul>
+            <div class="formula-box">
+              $$f_n = \frac{f_{\text{in}}}{2^n} \quad \text{for stage } n$$
+            </div>
+            <p>
+              Simultaneously, the states $(Q_2, Q_1, Q_0)$ function as a 3-bit binary asynchronous up-counter cycling from $000_2$ (0) to $111_2$ (7).
+            </p>
+          </section>
+
+          <section class="theory-section">
+            <h3>4. NE555 Astable Multivibrator Frequency Calculation</h3>
+            <div class="formula-box">
+              $$f = \frac{1.44}{(R_1 + 2 R_2) \cdot C_1}$$
+            </div>
+            <p>
+              In our circuit: $R_1 = 10\text{ k}\Omega$, $R_2 = 47\text{ k}\Omega$, $C_1 = 10\ \mu\text{F}$, yielding tunable laboratory frequencies from 0.2 Hz to 20 Hz.
+            </p>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
